@@ -1,114 +1,241 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>CSC2022 KMP Next Table</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f0f2f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
+<head>
+  <title>CSC2022 KMP Next Table</title>
+  <style>
+    /* --- General Layout --- */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-      .container {
-        background-color: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 100%;
-        max-width: 450px;
-      }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 500px; /* Slightly wider to fit table */
+    }
 
-      h1 {
-        margin-top: 0;
-        color: #333;
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
+    h1 {
+      margin-top: 0;
+      color: #333;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
 
-      label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #666;
-        font-weight: 500;
-        text-align: left;
-      }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #666;
+      font-weight: 500;
+      text-align: left;
+    }
 
-      .input-group {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 1rem;
-      }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
 
-      input[type="text"] {
-        flex-grow: 1;
-        padding: 10px 15px;
-        border: 2px solid #e1e1e1;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-        outline: none;
-      }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 15px;
+      border: 2px solid #e1e1e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      outline: none;
+    }
 
-      input[type="text"]:focus {
-        border-color: #007bff;
-      }
+    input[type="text"]:focus {
+      border-color: #007bff;
+    }
 
-      button {
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 0.2s, transform 0.1s;
-        font-weight: 600;
-      }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      font-weight: 600;
+    }
 
-      button:hover {
-        background-color: #0056b3;
-      }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-      button:active {
-        transform: scale(0.98);
-      }
+    button:active {
+      transform: scale(0.98);
+    }
 
-      #result {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        font-family: monospace;
-        color: #333;
-        min-height: 20px; /* Keeps layout stable if empty */
-        word-break: break-all;
-      }
-    </style>
-  </head>
-  <body>
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      min-height: 20px;
+      overflow-x: auto; /* Adds scrollbar if table is too wide */
+    }
 
-    <div class="container">
-      <h1>KMP Table Generator</h1>
-      
-      <label for="pattern">Pattern String</label>
-      <div class="input-group">
-        <input 
-          type="text" 
-          id="pattern" 
-          placeholder="e.g. ACACB" 
-          autocomplete="off"
-        />
-        <button id="submit" onclick="nexttable(document.getElementById('pattern').value)">Go</button>
-      </div>
+    /* --- Table Styling --- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0; /* Container handles padding */
+      background: white;
+    }
 
-      <div id="result">
-        </div>
-    </div>
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e9ecef;
+      color: #495057;
+      font-weight: 600;
+      width: 80px;
+      text-align: right;
+    }
+
+    td {
+      font-weight: 500;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>KMP Table Generator</h1>
     
-    <script src="nexttable.js"></script>
-  </body>
+    <label for="pattern">Pattern String</label>
+    <div class="input-group">
+      <input 
+        type="text" 
+        id="pattern" 
+        placeholder="e.g. ACACB" 
+        autocomplete="off"
+      />
+      <button id="submit" onclick="nexttable(document.getElementById('pattern').value)">Go</button>
+    </div>
+
+    <div id="result">
+      </div>
+  </div>
+
+  <script>
+    /** Main Algorithm **/
+    function nexttable(input) {
+      document.getElementById("result").innerHTML = ""; // Clear previous
+
+      var A = input.split("");
+      var B = new Array(A.length);
+
+      if (A.length > 0) B[0] = -1;
+      if (A.length > 1) B[1] = (A[1] == A[0]) ? -1 : 0;
+
+      for (var failPos = 2; failPos < A.length; failPos++) {
+        var flag = false;
+
+        for (var i = 1; i < failPos; i++) {
+          var subA = A.slice(i, failPos);
+          var subB = A.slice(0, subA.length);
+          var same = compareStrArray(subA, subB);
+
+          if (same) {
+            if (A[failPos] !== A[subA.length]) {
+              B[failPos] = subA.length;
+              flag = true;
+              break;
+            } else if (subB.length === 1 && subB[0] !== A[failPos]) {
+              B[failPos] = 0;
+              flag = true;
+              break;
+            } else {
+              continue;
+            }
+          } else {
+            if (subB.length === 1 && subB[0] !== A[failPos]) {
+              B[failPos] = 0;
+              flag = true;
+              break;
+            } else {
+              continue;
+            }
+          }
+        }
+        if (!flag) B[failPos] = -1;
+      }
+      generateTable(A, B);
+    }
+
+    /** Helper Functions **/
+    function compareStrArray(arrA, arrB) {
+      if (arrA.length != arrB.length) return false;
+      for (var i = 0; i < arrA.length; i++) {
+        if (arrA[i] !== arrB[i]) return false;
+      }
+      return true;
+    }
+
+    function generateTable(patternArr, nextArr) {
+      var resultDiv = document.getElementById("result");
+      var table = document.createElement("table");
+
+      // Row 1: Index
+      var trIndex = document.createElement("tr");
+      var thIndex = document.createElement("th");
+      thIndex.innerText = "Index";
+      trIndex.appendChild(thIndex);
+      for (var i = 0; i < patternArr.length; i++) {
+        var td = document.createElement("td");
+        td.innerText = i;
+        td.style.color = "#888";
+        trIndex.appendChild(td);
+      }
+      table.appendChild(trIndex);
+
+      // Row 2: Pattern
+      var trChar = document.createElement("tr");
+      var thChar = document.createElement("th");
+      thChar.innerText = "Pattern";
+      trChar.appendChild(thChar);
+      for (var i = 0; i < patternArr.length; i++) {
+        var td = document.createElement("td");
+        td.innerText = patternArr[i];
+        td.style.fontWeight = "bold";
+        trChar.appendChild(td);
+      }
+      table.appendChild(trChar);
+
+      // Row 3: Next
+      var trNext = document.createElement("tr");
+      var thNext = document.createElement("th");
+      thNext.innerText = "Next";
+      trNext.appendChild(thNext);
+      for (var i = 0; i < nextArr.length; i++) {
+        var td = document.createElement("td");
+        td.innerText = nextArr[i];
+        td.style.color = "#007bff";
+        trNext.appendChild(td);
+      }
+      table.appendChild(trNext);
+
+      resultDiv.appendChild(table);
+    }
+  </script>
+</body>
 </html>
